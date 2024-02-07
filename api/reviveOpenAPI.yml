@@ -1,0 +1,985 @@
+openapi: 3.0.2
+x-stoplight:
+  id: ac111rwcdirf2
+info:
+  title: Revive AdServer API
+  version: 1.0.0
+  description: Agriadventure
+  license:
+    name: ninjacart.com
+    url: ninjacart.com
+  contact:
+    name: Ninjacart
+    email: no-repy@ninjacart.com
+    url: ninjacart.com
+servers:
+  - url: 'https://localhost:5000'
+    description: localhost
+tags:
+  - name: Publishers
+    description: 'publishers management'
+  - name: Zones
+    description: 'zone manangement'
+paths:
+  /campagins/adv/{advertiserId}:
+    get:
+      tags:
+        - campaign management
+      summary: Gets a list of campaigns for an advertiser
+      parameters:
+        - name: advertiserId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: List of campaigns retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Campaign'
+        '404':
+          description: Advertiser not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        default:
+          description: Unexpected error
+  /campaigns:
+    post:
+      tags:
+        - campaign management
+      summary: Create a new campaign
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Campaign'
+      responses:
+        '201':
+          description: Campaign created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Campaign'
+        '400':
+          description: Bad request (error in request body)
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '500':
+          description: Internal server error
+
+  # update campaigns
+  /campaigns/{campaignId}:   
+    put:
+      tags:
+        - campaign management
+      summary: update existing campaign
+      parameters:
+        - in: path
+          name: campaignId
+          required: true
+          schema:
+            type: string
+          description: The ID of the campaign to update
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Campaign'
+      responses:
+        '200':
+          description: The updated campaign
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Campaign'
+        '400':
+          description: Bad request (invalid parameter)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Campaign not found
+        '500':
+          description: Internal server error
+
+  # delete campaigns
+  /campaign/{campaignId}:
+      delete:
+        tags:
+          - campaign management
+        summary: Remove a campaign
+        description: delete campaign by campaign id
+        parameters:
+          - in: path
+            name: campaignId
+            required: true
+            schema:
+              type: string
+            description: The ID of the campaign to remove
+        responses:
+          '204':
+            description: Campaign removed successfully (no content)
+          '400':
+            description: Bad request (invalid parameter)
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/ErrorResponse'
+          '401':
+            description: Unauthorized
+          '403':
+            description: Forbidden
+          '404':
+            description: Campaign not found
+          '500':
+            description: Internal server error
+ 
+  # banner management
+  /campaigns/{campaignId}/banners:
+    post:
+      tags:
+        - banner management
+      summary: Add a new banner to a campaign
+      parameters:
+        - name: campaignId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Banner'
+      responses:
+        '201':
+          description: Banner created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Banner'
+        '400':
+          description: Invalid request data
+        '404':
+          description: Campaign not found
+    get:
+      tags:
+        - banner management
+      summary: Get all banners for a campaign, get banner by campaign id
+      parameters:
+        - name: campaignId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: List of banners
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Banner'
+  /banners/{bannerId}:
+    get:
+      tags:
+        - banner management
+      summary: Get a banner by ID
+      parameters:
+        - name: bannerId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Banner details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Banner'
+        '404':
+          description: Banner not found
+    put:
+      tags:
+        - banner management
+      summary: Update a banner
+      parameters:
+        - name: bannerId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Banner'
+      responses:
+        '200':
+          description: Banner updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Banner'
+        '400':
+          description: Invalid request data
+        '404':
+          description: Banner not found
+    delete:
+      tags:
+        - banner management
+      summary: Delete a banner
+      parameters:
+        - name: bannerId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: Banner deleted successfully
+  /banner/{bannerId}/targeting:
+    post:
+      tags:
+        - banner management
+      summary: Sets delivery limitation for a banner
+      description: Overwrites any existing delivery limitations for the banner.
+      parameters:
+        - name: bannerId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ModifyBannerTargetingRequest'
+      responses:
+        '204':
+          description: Delivery limitations updated successfully
+        default:
+          description: Unexpected error
+    get:
+      tags:
+        - banner management
+      summary: Retrieves delivery limitations for a banner
+      parameters:
+        - name: bannerId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Delivery limitations retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/DeliveryLimitation'
+        default:
+          description: Unexpected error
+
+  # advertiser management
+  # add advertiser
+  /advertisers/{agencyId}:
+    get:
+      tags:
+        - advertiser management
+      summary: Gets a list of advertisers associated with an agency
+      description: Returns an unnamed array of advertisers.
+      parameters:
+        - name: agencyId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: List of advertisers retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Advertiser'
+        '404':
+          description: Agency not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        default:
+          description: Unexpected error
+  /advertisers:
+    post:
+      tags:
+        - advertiser management
+      summary: Adds a new advertiser
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AddAdvertiserRequest'
+      responses:
+        '201':
+          description: Advertiser created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Advertiser'
+        default:
+          description: Unexpected error
+    get:
+      tags:
+        - advertiser management
+      summary: Get a list of advertisers
+      parameters:
+        - name: name
+          in: query
+          schema:
+            type: string
+        - name: status
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: List of advertisers
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Advertiser'
+
+  /advertisers/{advertiserId}:
+    get:
+      tags:
+        - advertiser management
+      summary: Get an advertiser by ID
+      parameters:
+        - name: advertiserId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Advertiser details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Advertiser'
+        '404':
+          description: Advertiser not found
+    put:
+      tags:
+        - advertiser management
+      summary: Update an advertiser
+      parameters:
+        - name: advertiserId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Advertiser'
+      responses:
+        '200':
+          description: Advertiser updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Advertiser'
+        '400':
+          description: Invalid request data
+        '404':
+          description: Advertiser not found
+    delete:
+      tags:
+        - advertiser management
+      summary: Delete an advertiser
+      parameters:
+        - name: advertiserId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: Advertiser deleted successfully
+# Publisher Management
+  '/pub/new':
+    post:
+      summary: 'Add new publisher'
+      tags:
+        - Publishers
+      operationId: post-pub-pubId
+      requestBody:
+        description: Add new publisher
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                publisherName:
+                  type: string
+                website:
+                  type: string
+                contactName:
+                  type: string
+                emailAddress:
+                  type: string
+              x-examples:
+                Example 1:
+                  publisherName: New publisher
+                  website: 'https://www.example.com/'
+                  contactName: John Doe
+                  emailAddress: john.doe@example.com
+      responses:
+        '200':
+          description: operation successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/affiliates'
+  '/pub/{pubId}':
+    get:
+      summary: Get existing publisher
+      tags:
+        - Publishers
+      parameters:
+        - name: pubId
+          in: path
+          required: true
+          description: publisher ID
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: operation successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/affiliates'
+    patch:
+      summary: 'Modify existing publisher'
+      description: Modify existing publisher name, contact and email
+      tags:
+        - Publishers
+      operationId: patch-pub-pubId
+      parameters:
+        - name: pubId
+          in: path
+          required: true
+          description: publisher ID
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: operation successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/affiliates'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                publisherName:
+                  type: string
+                contactName:
+                  type: string
+                emailAddress:
+                  type: string
+              x-examples:
+                Example 1:
+                  publisherName: Modified Publisher
+                  contactName: Jane Doe
+                  emailAddress: jane.doe@example.com
+    delete:
+      summary: 'Delete existing publisher'
+      tags:
+        - Publishers
+      description: Delete existing publisher
+      operationId: delete-pub-pubId
+      parameters:
+        - name: pubId
+          in: path
+          required: true
+          description: publisher ID
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: OK
+# Zone Management
+  '/zon/new':
+    post:
+      summary: 'Add new zone'
+      tags:
+        - Zones
+      description: Add new zone
+      operationId: post-zon-zonId
+      requestBody:
+        description: 'Add new zone'
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                publisherId:
+                  type: integer
+                zoneName:
+                  type: string
+                type:
+                  type: string
+                width:
+                  type: integer
+                height:
+                  type: integer
+              x-examples:
+                Example 1:
+                  publisherId: 1
+                  zoneName: New zone
+                  type: '0'
+                  width: 728
+                  height: 90
+      responses:
+        '200':
+          description: operation successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/zones'
+  '/zon/{zonId}':
+    get:
+      summary: Get the details of an existing zone
+      tags:
+        - Zones
+      operationId: get-zon-zonId
+      description: Get zone info from zone ID.
+      parameters:
+        - name: zonId
+          in: path
+          required: true
+          description: zone ID
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: operation successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/zones'
+    patch:
+      summary: Modify existing user
+      tags:
+        - Zones
+      description: Modify existing zone
+      operationId: patch-zon-zonId
+      parameters:
+        - name: zonId
+          in: path
+          required: true
+          description: zone ID
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                zoneName:
+                  type: string
+                type:
+                  type: string
+                width:
+                  type: integer
+                height:
+                  type: integer
+              x-examples:
+                Example 1:
+                  zoneName: Modified zone
+                  type: '0'
+                  width: 468
+                  height: 60
+      responses:
+        '200':
+          description: operation successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/zones'
+    delete:
+      summary: Delete existing zone
+      tags:
+        - Zones
+      description: Delete existing zone
+      operationId: delete-zon-zonId
+      parameters:
+        - name: zonId
+          in: path
+          required: true
+          description: zone ID
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: OK
+# components  
+components:
+  schemas:
+    affiliates:
+      type: object
+      properties:
+        publisherId:
+          type: string
+        accountId:
+          type: string
+        agencyId:
+          type: string
+        publisherName:
+          type: string
+        contactName:
+          type: string
+        emailAddress:
+          type: string
+        website:
+          type: string
+        comments:
+          type: string
+      x-examples:
+        Example 1:
+          publisherId: '1'
+          accountId: '4'
+          agencyId: '1'
+          publisherName: Demo Website
+          contactName: Demo Website
+          emailAddress: noreply@reviveadserverrestapi.com
+          website: 'https://www.reviveadserverrestapi.com/'
+          comments: ''
+    zones:
+      type: object
+      x-examples:
+        Example 1:
+          zoneId: '1'
+          publisherId: '1'
+          zoneName: Demo Zone 1
+          type: '0'
+          width: '728'
+          height: '90'
+          capping: '0'
+          sessionCapping: '0'
+          block: '0'
+          comments: ''
+          append: ''
+          prepend: ''
+          chainedZoneId: null
+      properties:
+        zoneId:
+          type: integer
+          format: int64
+          readOnly: true
+        publisherId:
+          type: string
+        zoneName:
+          type: string
+        type:
+          type: string
+        width:
+          type: string
+        height:
+          type: string
+        capping:
+          type: string
+        sessionCapping:
+          type: string
+        block:
+          type: string
+        comments:
+          type: string
+        append:
+          type: string
+        prepend:
+          type: string
+        chainedZoneId:
+          nullable: true
+    Campaign:
+      type: object
+      properties:
+        #basic information
+        campaignName:
+          type: string
+        campaignId:
+          type: integer
+        clientId:
+          type: integer
+
+        #doubt: priority change
+        campaignType:
+          type: string
+          enum: [REMNANT, CONTRACT, OVERRIDE]
+        # start & end date
+        startDate:
+          type: string
+          format: date
+        endDate:
+          type: string
+          format: date
+        # pricing
+        revenue_type:
+          type: array
+          enum: [CPM, CPC, CPA, Tenacy]   # 1 based indexing
+        revenue:                          # rate/price
+          type: number
+        conversions:
+          type: integer
+        clicks:
+          type: integer
+        impressions:
+          type: integer
+        
+        # priority, relative to other campaigns
+        weight:
+          type: integer
+
+        # delivery capping
+        target_impression:
+          type: integer
+        target_click:
+          type: integer
+        target_conversion: 
+          type: integer
+    
+    # update campaign
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: object
+          properties:
+            code:
+              type: string
+            message:
+              type: string
+            errors:
+              type: array
+              items:
+                $ref: '#/components/schemas/ErrorDetail'
+    ErrorDetail:
+      type: object
+      properties:
+        field:
+          type: string
+        message:
+          type: string
+
+    # get all campaigns
+    Campaigns:
+      type: object
+      properties:
+        entries:
+          type: array
+          items:
+            $ref: '#/components/schemas/Campaign'
+    
+    Banner:
+      type: object
+      properties:
+        bannerId:
+          type: string
+          example: "12"
+        campaignId:
+          type: string
+          example: "4"
+        bannerName:
+          type: string
+          example: "Statistics Demo Banner"
+        storageType:
+          type: string
+          enum: [web, local]
+          example: "web"
+        imageURL:
+          type: string
+          example: ""
+        htmlTemplate:
+          type: string
+          example: ""
+        width:
+          type: integer
+          format: int32
+          example: 320
+        height:
+          type: integer
+          format: int32
+          example: 65
+        weight:
+          type: integer
+          format: int32
+          example: 1
+        target:
+          type: string
+          enum: [_blank, _self, _parent, _top]
+          example: "_self"
+        url:
+          type: string
+          format: uri
+          example: "https://www.reviveadserverrestapi.com/"
+        bannerText:
+          type: string
+          example: ""
+        status:
+          type: integer
+          format: int32
+          example: 0
+        adserver:
+          type: string
+          example: ""
+        transparent:
+          type: integer
+          format: int32
+          example: 0
+        capping:
+          type: integer
+          format: int32
+          example: 0
+        sessionCapping:
+          type: integer
+          format: int32
+          example: 0
+        block:
+          type: integer
+          format: int32
+          example: 0
+        aImage:
+          type: string
+          format: binary
+        aBackupImage:
+          type: string
+          format: binary
+        comments:
+          type: string
+          example: ""
+        alt:
+          type: string
+          example: "Revive Adserver REST API"
+        filename:
+          type: string
+          example: "968fd0ae42ce2f28941bb9c15539a7c6.png"
+        append:
+          type: string
+          example: ""
+        prepend:
+          type: string
+          example: ""
+    ModifyBannerTargetingRequest:
+      type: object
+      required:
+        - logical
+        - type
+        - comparison
+        - data
+      properties:
+        logical:
+          type: string
+          enum: [and, or]
+        type:
+          type: string
+        comparison:
+          type: string
+        data:
+          type: string
+    DeliveryLimitation:
+      type: object
+      required:
+        - type
+        - comparison
+        - data
+      properties:
+        type:
+          type: string
+        comparison:
+          type: string
+
+    Advertiser:
+      type: object
+      properties:
+        # basic information
+        accountId:
+          type: integer
+        clientId:
+          type: integer
+        agencyId:
+          type: integer
+        clientName:
+          type: string
+        contact:
+          type: string
+        email:
+          type: string
+
+        # advertiser report
+        report:
+          type: boolean
+        reportInterval:
+          type: integer
+        reportLastDate:
+          type: string
+        reportDeactivate:
+          type: boolean
+    AddAdvertiserRequest:
+      type: object
+      required:
+        - advertiserName
+      properties:
+        advertiserName:
+          type: string
+        contactName:
+          type: string
+        emailAddress:
+          type: string
+        comments:
+          type: string
+        username:
+          type: string
+        password:
+          type: string
